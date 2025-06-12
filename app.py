@@ -8,6 +8,7 @@ SLACK_TOKEN = os.getenv("SLACK_TOKEN")
 
 @app.route("/slack-proxy/<path:endpoint>", methods=["GET", "POST"])
 def slack_proxy(endpoint):
+    print("Incoming headers:", dict(request.headers))
     slack_url = f"https://slack.com/api/{endpoint}"
     headers = {
         "Authorization": f"Bearer {SLACK_TOKEN}",
