@@ -20,3 +20,6 @@ def slack_proxy(endpoint):
         response = requests.get(slack_url, headers=headers, params=request.args)
 
     return jsonify(response.json()), response.status_code
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
