@@ -50,8 +50,10 @@ def slack_proxy(endpoint):
                         fixed_str = raw_data.encode().decode('unicode_escape')
                         if fixed_str.startswith('"') and fixed_str.endswith('"'):
                             fixed_str = fixed_str[1:-1]
+
+                        logging.info(f"String with fixed method: {fixed_str}")
                         payload = json.loads(fixed_str)
-                        logging.info(f"Payload with fixed method: {payload}")
+                        # logging.info(f"Payload with fixed method: {payload}")
                     except Exception as err:
                         logging.error(f"Failed to parse and fix malformed JSON: {err}")
                         return jsonify({"error": "Malformed JSON and fix failed"}), 400
