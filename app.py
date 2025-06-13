@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify
 import requests
 import os
 import logging
+import json
 from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 
@@ -36,12 +37,29 @@ def slack_proxy(endpoint):
         if request.method == "GET":
             response = requests.get(slack_url, headers=HEADERS, params=request.args)
         elif request.method == "POST":
-            if request.is_json:
-                payload = request.get_json()
-            else:
-                return jsonify({"error": "Expected JSON body"}), 400
             
-            print("Incoming json body:", payload)
+            if endpoint == "chat.postMessage":
+                raw_data = request.get_data(as_text=True)
+                try:
+                    # Standard method:
+                    payload = json.loads(raw_data)
+                except json.JSONDecodeError:
+                    logging.warning("Malformed JSON for chat.postMessage, attempting to fix it.")
+                    try:
+                        fixed_str = raw_data.encode().decode('unicode_escape')
+                        if fixed_str.startswith('"') and fixed_str.endswith('"'):
+                            fixed_str = fixed_str[1:-1]
+                        payload = json.loads(fixed_str)
+                    except Exception as err:
+                        logging.error(f"Failed to parse and fix malformed JSON: {err}")
+                        return jsonify({"error": "Malformed JSON and fix failed"}), 400
+            else:
+                if request.is_json:
+                    payload = request.get_json()
+                else:
+                    return jsonify({"error": "Expected JSON body"}), 400
+            
+            logging.info(f"Final payload for {endpoint}: {payload}")
             response = requests.post(slack_url, headers=HEADERS, json=payload)
         
         return jsonify(response.json()), response.status_code
