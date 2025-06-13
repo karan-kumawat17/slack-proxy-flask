@@ -28,7 +28,7 @@ HEADERS = {
 
 @app.route("/slack-proxy/<path:endpoint>", methods=["GET", "POST"])
 def slack_proxy(endpoint):
-    print("Incoming headers:", dict(request.headers))
+    # print("Incoming headers:", dict(request.headers))
 
     slack_url = f"{SLACK_API_BASE}/{endpoint}"
 
@@ -41,6 +41,7 @@ def slack_proxy(endpoint):
             else:
                 return jsonify({"error": "Expected JSON body"}), 400
             
+            print("Incoming json body:", payload)
             response = requests.post(slack_url, headers=HEADERS, json=payload)
         
         return jsonify(response.json()), response.status_code
